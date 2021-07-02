@@ -125,7 +125,7 @@ class CICYWorker(Worker):
         # make callback list
         patience = int(0.2*budget)
         reduce_lr = tfk.callbacks.ReduceLROnPlateau(
-            monitor='val_acc' if self.classification else 'accuracy',
+            monitor='val_accuracy' if self.classification else 'accuracy',
             factor=0.5, patience=patience,
             verbose=1, mode='auto', min_delta=0.01,
             cooldown=0, min_lr=1e-6

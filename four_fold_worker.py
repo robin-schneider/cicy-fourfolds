@@ -1,6 +1,6 @@
 """
 Running full set of experiments with configuration specified in
-'sample.in'
+'configs/best.in'
 """
 from CICYworker import CICYWorker
 import os as os
