@@ -107,8 +107,8 @@ def inception_model(input_shape, num_classes,
         #  with CICY threefold Inception paper
         x = tfk.layers.BatchNormalization(
             axis=-1, scale=False, name=str(i)+'_bn')(x)
-        x = tfk.layers.Dropout(
-            rate=config['dropout'], name='dr'+str(i))(x)
+    x = tfk.layers.Dropout(
+        rate=config['dropout'], name='dr'+str(config['nBlock']))(x)
         
 
     if config['nDense'] > 1 and config['auxloss']:
