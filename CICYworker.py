@@ -103,7 +103,9 @@ class CICYWorker(Worker):
         ))
 
         # verbose variable 0 - silent,  1 - tf output,
-        # 2 - saves history to workdir
+        # 2 - saves history to workdir 
+        # 3 - saves best model
+        # 4 - tracks test accuracy at each epoch (takes a lot of time)
         self.verbose = 0
 
         # rescale for computing accuracy in reg
@@ -123,10 +125,10 @@ class CICYWorker(Worker):
             reg_scales={'min': self.min, 'max': self.max})
 
         # make callback list
-        patience = int(0.2*budget)
+        patience = int(0.15*budget)
         reduce_lr = tfk.callbacks.ReduceLROnPlateau(
             monitor='val_accuracy' if self.classification else 'accuracy',
-            factor=0.5, patience=patience,
+            factor=0.3, patience=patience,
             verbose=1, mode='auto', min_delta=0.01,
             cooldown=0, min_lr=1e-6
         )
@@ -140,13 +142,24 @@ class CICYWorker(Worker):
                     reg_call_back = RegressionSAccuracy
                 #reg_acc_cb = [reg_call_back((self.x_val, self.y_val),
                 #  self.min, self.max, 'val')]
-                callback_list += [reg_call_back((self.x_test,
-                    self.y_test), self.min, self.max, 'test')]
+                if self.verbose > 3:
+                    callback_list += [reg_call_back((self.x_test,
+                        self.y_test), self.min, self.max, 'test')]
                 callback_list += [reg_call_back((self.x_val,
                     self.y_val), self.min, self.max, 'val')]
             else:
-                callback_list += [ClassAcc((self.x_test, self.y_test),
-                     'test')]
+                if self.verbose > 3:
+                    callback_list += [
+                        ClassAcc((self.x_test, self.y_test), 'test')]
+            #save best model; essentially early stopping
+            checkpoint_filepath = os.path.join(
+                working_directory, 'best_model')
+            model_checkpoint_callback = tfk.callbacks.ModelCheckpoint(
+                filepath=checkpoint_filepath,
+                monitor='val_accuracy' if self.classification else 'accuracy',
+                mode='max',
+                save_best_only=True)
+            callback_list += [model_checkpoint_callback]
 
         # fit the model with budget
         history = model.fit(
@@ -159,13 +172,25 @@ class CICYWorker(Worker):
             callbacks=callback_list
         )
 
-        # dump history if verbose = 2
+        # dump history if verbose > 1
         if self.verbose > 1:
             with open(os.path.join(working_directory,
                  'history.json'), 'w') as f:
                 json.dump(str(history.history), f)
             model.save(os.path.join(
                 working_directory, 'inception_model'))
+        
+        best_info = {}    
+        if self.verbose > 2 and self.classification:
+            best_model = tfk.models.load_model(checkpoint_filepath)
+            best_val_score = best_model.evaluate(
+                self.x_val, self.y_val, verbose=0)
+            best_test_score = best_model.evaluate(
+                self.x_test, self.y_test, verbose=0)
+            best_info['best validation accuracy'] = best_val_score[1]
+            best_info['best test accuracy']= best_test_score[1]
+            best_info['best test loss'] = best_test_score[0]
+            best_info['best validation loss'] = best_val_score[0]    
 
         if self.classification:
             val_score = model.evaluate(
@@ -180,6 +205,7 @@ class CICYWorker(Worker):
                         'test loss': test_score[0],
                         'validation loss': val_score[0],
                         'number of parameters': model.count_params(),
+                        'best_info': best_info
                         }
                     })
         else:

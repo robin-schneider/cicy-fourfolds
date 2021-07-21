@@ -72,7 +72,7 @@ if __name__ == '__main__':
                     tails=tails_path,
                     h=h, run_id=1
                 )
-                w.verbose = 2
+                w.verbose = 3
                 sub_dir = os.path.join(directory, str(l[0]))
                 if not os.path.exists(sub_dir):
                     os.makedirs(sub_dir)
