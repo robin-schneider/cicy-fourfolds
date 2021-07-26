@@ -151,15 +151,19 @@ class CICYWorker(Worker):
                 if self.verbose > 3:
                     callback_list += [
                         ClassAcc((self.x_test, self.y_test), 'test')]
-            #save best model; essentially early stopping
-            checkpoint_filepath = os.path.join(
-                working_directory, 'best_model')
-            model_checkpoint_callback = tfk.callbacks.ModelCheckpoint(
-                filepath=checkpoint_filepath,
-                monitor='val_accuracy' if self.classification else 'accuracy',
-                mode='max',
-                save_best_only=True)
-            callback_list += [model_checkpoint_callback]
+                #save best model; essentially early stopping
+                checkpoint_filepaths = [\
+                    os.path.join(working_directory, 'best_loss'),
+                    os.path.join(working_directory, 'best_acc')]
+                best_metrics = ['val_loss', 'val_accuracy']
+                best_modes = ['min', 'max']
+                for i in range(2):
+                    callback_list += [\
+                        tfk.callbacks.ModelCheckpoint(
+                            filepath=checkpoint_filepaths[i],
+                            monitor=best_metrics[i],
+                            mode=best_modes[i],
+                            save_best_only=True)]
 
         # fit the model with budget
         history = model.fit(
@@ -182,15 +186,16 @@ class CICYWorker(Worker):
         
         best_info = {}    
         if self.verbose > 2 and self.classification:
-            best_model = tfk.models.load_model(checkpoint_filepath)
-            best_val_score = best_model.evaluate(
-                self.x_val, self.y_val, verbose=0)
-            best_test_score = best_model.evaluate(
-                self.x_test, self.y_test, verbose=0)
-            best_info['best validation accuracy'] = best_val_score[1]
-            best_info['best test accuracy']= best_test_score[1]
-            best_info['best test loss'] = best_test_score[0]
-            best_info['best validation loss'] = best_val_score[0]    
+            for i in range(2):
+                best_model = tfk.models.load_model(checkpoint_filepaths[i])
+                best_val_score = best_model.evaluate(
+                    self.x_val, self.y_val, verbose=0)
+                best_test_score = best_model.evaluate(
+                    self.x_test, self.y_test, verbose=0)
+                best_info['best validation accuracy_'+str(i)] = best_val_score[1]
+                best_info['best test accuracy_'+str(i)]= best_test_score[1]
+                best_info['best test loss_'+str(i)] = best_test_score[0]
+                best_info['best validation loss_'+str(i)] = best_val_score[0]    
 
         if self.classification:
             val_score = model.evaluate(
