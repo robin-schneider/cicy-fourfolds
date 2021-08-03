@@ -44,7 +44,8 @@ Note the hyperparameters found for a classification run do generically not gener
 python BOHB.py --min_budget=10 --max_budget=100 --nfold=4 --shared_directory=bohb4 --hodge=-1 --classification=0
 ```
 
-Such a scan will take even more time and the results were not coming close to the accuracy in all four hodge numbers as found by the [CICYminer](https://github.com/thesfinox/ml-cicy-4folds).
+Such a scan will take even more time and the results are not comparable to the accuracy in all four hodge numbers as found by the [CICYminer](https://github.com/thesfinox/ml-cicy-4folds).
+That is because the current implementation only shares the Inception-blocks but does not give separate Inception-modules to each task. It also doe not utilize the Huber Loss. Training with additional aux-losses further increases computation time significantly.
 
 ## Notebooks
 
@@ -60,4 +61,4 @@ are welcome.
 
 ## References and links
 
-This project is a follow up to [previously](https://github.com/thesfinox/ml-cicy) initiated [studies](https://arxiv.org/pdf/2007.13379.pdf) investigating CICY three-folds using [inception](https://arxiv.org/abs/1409.4842) inspired neural networks. The [CICYminer](https://github.com/thesfinox/ml-cicy-4folds) use in the main results section is based on the [Deep Miner](https://arxiv.org/abs/2102.09321) architecture for image recognition.
+This project is a follow up to [previously](https://github.com/thesfinox/ml-cicy) initiated [studies](https://arxiv.org/pdf/2007.13379.pdf) investigating CICY three-folds using [inception](https://arxiv.org/abs/1409.4842) inspired neural networks. The [CICYminer](https://github.com/thesfinox/ml-cicy-4folds) used in the main results section is based on the [Deep Miner](https://arxiv.org/abs/2102.09321) architecture for image recognition.
