@@ -1,0 +1,1 @@
+{"act_d": "relu", "auxloss": False, "bSize": 128, "bunits": 128, "dropout": 0.1, "dunits": 32, "l1": 1e-05, "l2": 7e-05, "lr": 1e-04, "nBlock": 5, "nDense": 2, "optimizer": "Adam"}
