@@ -1,6 +1,6 @@
 # cicy-fourfolds
 
-Learning CICY hodge numbers. This repository contains code to learn the Hodge number of Complete Intersection Calabi-Yau manifolds. The scripts work for three- and four-folds.
+This repository contains code to learn the Hodge number of Complete Intersection Calabi-Yau manifolds. The scripts work for three- and four-folds. The accompanying paper can be found [here (2108.02221)](https://arxiv.org/abs/2108.02221).
 
 ## Set-up
 
@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 If you are interested in learning four-folds you will however need a modern GPU and should check out tensorflow gpu installation [instructions](https://www.tensorflow.org/install/gpu).
 
-Once successfully installed you can prepare the cicy four-fold dataset with
+Once successfully installed you can prepare the CICY four-fold dataset with
 
 ```console
 python create_data.py
@@ -38,14 +38,14 @@ The plots in the paper were made with a different set of hyperparameters which b
 python four_fold_worker.py --fconfig=efficient.in
 ```
 
-Note the hyperparameters found for a classification run do generically not generalize well to a regression architecture. You will have to do a separate hyperparameter tuning for that one. It is also possible to predict all four hodge numbers at the same time:
+Note: the hyperparameters found for a classification run do generically not generalize well to a regression architecture. You will have to do a separate hyperparameter optimization for the regression case. It is also possible to predict all four hodge numbers at the same time:
 
 ```console
 python BOHB.py --min_budget=10 --max_budget=100 --nfold=4 --shared_directory=bohb4 --hodge=-1 --classification=0
 ```
 
-Such a scan will take even more time and the results are not comparable to the accuracy in all four hodge numbers as found by the [CICYminer](https://github.com/thesfinox/ml-cicy-4folds).
-That is because the current implementation only shares the Inception-blocks but does not give separate Inception-modules to each task. It also doe not utilize the Huber Loss. Training with additional aux-losses further increases computation time significantly.
+Such a scan will take even more time and the results are not comparable to the accuracy achieved by the [CICYminer](https://github.com/thesfinox/ml-cicy-4folds).
+The reasons for that are as follows: The current implementation only shares the Inception modules but the different tasks do not have their own Inception blocks. It also does not utilize the Huber Loss. Training with additional aux-losses is implemented, but increases computation time significantly.
 
 ## Notebooks
 
